@@ -25,7 +25,7 @@ using static Reloaded.Memory.Buffers.Internal.Kernel32.Kernel32;
 using Decoder = Iced.Intel.Decoder;
 using Serilog;
 
-internal unsafe sealed class ArgFixer
+public unsafe sealed class ArgFixer
 {
     private readonly Process targetProcess;
     private readonly bool disposeTargetProcess;
