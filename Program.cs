@@ -9,7 +9,6 @@ internal class Program
 {
     static void Main(string[] args)
     {
-        Console.WriteLine("Hello, World!");
         var noFixAcl = true;
         var waitForGameWindow = true;
         var gamePath = "D:\\Games\\FFXIV\\sdo\\sdologin\\..\\..\\game\\ffxiv_dx11.exe";

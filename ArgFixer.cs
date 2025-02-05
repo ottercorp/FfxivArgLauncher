@@ -186,7 +186,7 @@ internal unsafe sealed class ArgFixer
 
         var bytes = this.Assemble(asm);
         this.argFixFunctionAddr = this.memoryBuffer.Add(bytes);
-        Console.WriteLine($"ArgFixFunctionAddress: 0x{this.argFixFunctionAddr:X}");
+        Log.Information($"ArgFixFunctionAddress: 0x{this.argFixFunctionAddr:X}");
 
         if (this.argFixFunctionAddr == 0)
         {
@@ -232,7 +232,7 @@ internal unsafe sealed class ArgFixer
         var bytes = this.Assemble(asm);
         //bytes.Append(bytes);
         var detourBodyAddress = this.memoryBuffer.Add(bytes);
-        Console.WriteLine($"DetourBodyAddress: 0x{detourBodyAddress:X}");
+        Log.Information($"DetourBodyAddress: 0x{detourBodyAddress:X}");
         asm = new Assembler(64);
         asm.mov(rax, detourBodyAddress);
         asm.jmp(rax);
@@ -242,7 +242,7 @@ internal unsafe sealed class ArgFixer
         }
 
         bytes = this.Assemble(asm);
-        Console.WriteLine(bytes.Length);
+        //Console.WriteLine(bytes.Length);
         this.extMemory.WriteRaw(sdoLoginAddr, bytes);
         //Console.WriteLine($"hookAddress: 0x{hookAddress:X}");
         //asm.
