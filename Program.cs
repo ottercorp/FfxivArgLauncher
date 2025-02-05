@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Dalamud.Injector;
 using Reloaded.Memory.Buffers;
@@ -9,37 +10,40 @@ internal class Program
 {
     static void Main(string[] args)
     {
-        switch (args.Length)
+        // launch gamePath argments
+        // read pid channelName
+
+        switch (args[0])
         {
-            case 3:
+            case "launch":
                 {
-                    if (args[0] == "launch")
-                    {
-                        var noFixAcl = false;
-                        var waitForGameWindow = true;
-                        var gamePath = args[1];
-                        var gameArgumentString = args[2];
-                        var process = GameStart.LaunchGame(
-                            Path.GetDirectoryName(gamePath),
-                            gamePath,
-                            gameArgumentString,
-                            noFixAcl,
-                            p =>
-                            {
-                                var argFixer = new ArgFixer(p);
-                                argFixer.Fix();
-                            },
-                            waitForGameWindow);
-                    }
+                    var noFixAcl = false;
+                    var waitForGameWindow = true;
+                    var gamePath = args[1];
+                    var gameArgumentString = args[2];
+                    var process = GameStart.LaunchGame(
+                        Path.GetDirectoryName(gamePath),
+                        gamePath,
+                        gameArgumentString,
+                        noFixAcl,
+                        p =>
+                        {
+                            var argFixer = new ArgFixer(p);
+                            argFixer.Fix();
+                        },
+                        waitForGameWindow);
 
                     break;
                 }
 
+            case "read":
+                {
+                    var process = Process.GetProcessById(int.Parse(args[1]));
+                    var argReader = new ArgReader(process);
+                    break;
+                }
             default:
-                {
-                    throw new Exception("Error args");
-                    break;
-                }
+                throw new Exception("Error args");
         }
     }
 }
