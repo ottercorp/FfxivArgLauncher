@@ -42,6 +42,7 @@ public unsafe sealed class ArgFixer
     {
         this.targetProcess = targetProcess;
         this.disposeTargetProcess = disposeTargetProcess;
+        Console.WriteLine(targetProcess.Id);
 
         this.extMemory = new ExternalMemory(targetProcess);
         this.circularBuffer = new CircularBuffer(4096, this.extMemory);
@@ -262,7 +263,7 @@ public unsafe sealed class ArgFixer
             if (result > 0)
             {
                 string fileName = Encoding.UTF8.GetString(szFileName, 0, result);
-                if (Path.GetFileName(fileName) == "ffxiv_dx11.exe")
+                if (Path.GetFileName(fileName).Contains("ffxiv_dx11"))
                 {
                     this.mainModuleBaseAddress = (nuint)mbi.AllocationBase;
                     this.mainModuleRegionSize += mbi.RegionSize;
