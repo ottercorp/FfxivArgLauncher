@@ -1,36 +1,23 @@
 ﻿namespace FfxivArgLauncher;
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using Reloaded.Memory.Sigscan;
-using System.Formats.Asn1;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection.Emit;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 using Iced.Intel;
-using Microsoft.Win32;
-using Microsoft.Win32.SafeHandles;
-using PeNet;
 using Reloaded.Memory.Buffers;
+using Reloaded.Memory.Sigscan;
 using Reloaded.Memory.Sources;
 using Reloaded.Memory.Utilities;
-using static Iced.Intel.AssemblerRegisters;
-using static Reloaded.Memory.Buffers.Internal.Kernel32.Kernel32;
-using Decoder = Iced.Intel.Decoder;
 using Serilog;
+using System;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Text;
+using static Iced.Intel.AssemblerRegisters;
+using Decoder = Iced.Intel.Decoder;
 
 public unsafe sealed class ArgFixer
 {
     private readonly Process targetProcess;
     private readonly bool disposeTargetProcess;
     private readonly ExternalMemory extMemory;
-    private readonly CircularBuffer circularBuffer;
     private readonly PrivateMemoryBuffer memoryBuffer;
     private readonly Scanner scanner;
 
@@ -45,7 +32,6 @@ public unsafe sealed class ArgFixer
         Console.WriteLine(targetProcess.Id);
 
         this.extMemory = new ExternalMemory(targetProcess);
-        this.circularBuffer = new CircularBuffer(4096, this.extMemory);
         this.memoryBuffer = new MemoryBufferHelper(targetProcess).CreatePrivateMemoryBuffer(4096);
         this.GetMainModuleAddress();
         this.extMemory.ReadRaw(this.mainModuleBaseAddress, out var exeData, (int)this.mainModuleRegionSize);
