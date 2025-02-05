@@ -9,18 +9,13 @@ internal class Program
 {
     static void Main(string[] args)
     {
-        foreach (var item in args)
-        {
-            Console.WriteLine(item);
-        }
-
         switch (args.Length)
         {
             case 3:
                 {
                     if (args[0] == "launch")
                     {
-                        var noFixAcl = true;
+                        var noFixAcl = false;
                         var waitForGameWindow = true;
                         var gamePath = args[1];
                         var gameArgumentString = args[2];

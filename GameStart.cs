@@ -128,7 +128,7 @@ namespace Dalamud.Injector
                     {
                         var tries = 0;
                         const int maxTries = 1200;
-                        const int timeout = 5000;
+                        const int timeout = 50;
 
                         do
                         {

@@ -256,18 +256,16 @@ public unsafe sealed class ArgFixer
             VirtualQueryEx(this.targetProcess.Handle, mbi.BaseAddress, out mbi, Marshal.SizeOf<MEMORY_BASIC_INFORMATION>());
             mbi.BaseAddress = mbi.BaseAddress + mbi.RegionSize)
         {
-            byte[] szFileName = new byte[260]; // MAX_PATH
-            int dwSize = szFileName.Length;
-
-            int result = GetMappedFileNameA(this.targetProcess.Handle, mbi.BaseAddress, szFileName, dwSize);
+            var lpFilename = new StringBuilder(1024);
+            int result = GetMappedFileNameW(this.targetProcess.Handle, mbi.BaseAddress, lpFilename, lpFilename.Capacity);
             if (result > 0)
             {
-                string fileName = Encoding.UTF8.GetString(szFileName, 0, result);
-                if (Path.GetFileName(fileName).Contains("ffxiv_dx11"))
+                string fileName = lpFilename.ToString();
+                Log.Verbose($"Mapped File: {fileName}, Base Address: {mbi.BaseAddress:X}, AllocationBase Address: {mbi.AllocationBase:X},Size: {mbi.RegionSize}");
+                if (Path.GetFileName(fileName) == "ffxiv_dx11.exe")
                 {
                     this.mainModuleBaseAddress = (nuint)mbi.AllocationBase;
                     this.mainModuleRegionSize += mbi.RegionSize;
-                    Log.Verbose($"Mapped File: {fileName}, Base Address: {mbi.BaseAddress:X}, AllocationBase Address: {mbi.AllocationBase:X},Size: {mbi.RegionSize}");
                 }
             }
         }
@@ -293,8 +291,9 @@ public unsafe sealed class ArgFixer
         public uint Type;
     }
 
-    [DllImport("psapi.dll", SetLastError = true, CharSet = CharSet.Ansi)]
-    private static extern int GetMappedFileNameA(IntPtr hProcess, IntPtr lpv, [Out] byte[] lpFilename, int nSize);
+    [DllImport("psapi.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+    private static extern int GetMappedFileNameW(IntPtr hProcess, IntPtr lpv, StringBuilder lpFilename, int nSize);
+
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool VirtualQueryEx(IntPtr hProcess, IntPtr lpAddress, out MEMORY_BASIC_INFORMATION lpBuffer, int dwLength);
 }
