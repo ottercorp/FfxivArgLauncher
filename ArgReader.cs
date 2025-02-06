@@ -31,7 +31,6 @@ internal class ArgReader
         this.extMemory.ReadRaw((nuint)this.targetProcess.MainModule.BaseAddress, out var exeData, this.targetProcess.MainModule.ModuleMemorySize);
         this.scanner = new Scanner(exeData);
         this.GetGameWindowPtr();
-        this.GetArgs();
     }
 
     public List<string> GetArgs()
