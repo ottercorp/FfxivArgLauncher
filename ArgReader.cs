@@ -14,7 +14,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Decoder = Iced.Intel.Decoder;
 
-internal class ArgReader
+public sealed class ArgReader
 {
     private readonly Process targetProcess;
     private readonly bool disposeTargetProcess;
