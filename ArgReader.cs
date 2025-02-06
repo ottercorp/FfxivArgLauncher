@@ -51,6 +51,11 @@ public sealed class ArgReader
         return args;
     }
 
+    public void KillProcess()
+    {
+        this.targetProcess?.Kill();
+    }
+
     private string ReadString(nuint ptr, Encoding encoding, int maxLength = 256) {
         this.extMemory.SafeReadRaw(ptr , out var bytes, maxLength);
         var data = encoding.GetString(bytes);
