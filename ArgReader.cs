@@ -43,7 +43,9 @@ internal class ArgReader
         {
             this.extMemory.Read<nuint>(argListPtr + (nuint)(8 * i), out var argPtr);
             var arg = ReadString(argPtr,Encoding.UTF8);
+#if DEBUG
             Console.WriteLine($"{argPtr:X},{arg}");
+#endif
             args.Add(arg);
         }
 

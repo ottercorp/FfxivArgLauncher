@@ -29,8 +29,10 @@ public unsafe sealed class ArgFixer
     {
         this.targetProcess = targetProcess;
         this.disposeTargetProcess = disposeTargetProcess;
+#if DEBUG
         Console.WriteLine(targetProcess.Id);
-
+#endif
+        
         this.extMemory = new ExternalMemory(targetProcess);
         this.memoryBuffer = new MemoryBufferHelper(targetProcess).CreatePrivateMemoryBuffer(4096);
         this.GetMainModuleAddress();
