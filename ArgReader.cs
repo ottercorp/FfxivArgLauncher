@@ -1,4 +1,4 @@
-﻿namespace FfxivArgLauncher;
+namespace FfxivArgLauncher;
 
 using Iced.Intel;
 using PeNet.Header.Resource;
@@ -13,6 +13,32 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Decoder = Iced.Intel.Decoder;
+
+public sealed class LoginData:IEquatable<LoginData>
+{
+    public string[] Args;
+    public string SessionId;
+    public string SndaID;
+    public string CommandLine;
+
+    public bool Equals(LoginData? other)
+    {
+        if (other is null)
+        {
+            return false;
+        }
+
+        return this.SessionId == other.SessionId && this.SndaID == other.SndaID;
+    }
+
+    public override int GetHashCode() => (this.SndaID, this.SndaID).GetHashCode();
+
+    public bool IsWegame() {
+        if (Args.Contains("rail_zone_stat=1"))
+            return true;
+        return false;
+    }
+}
 
 public sealed class ArgReader
 {
@@ -33,22 +59,47 @@ public sealed class ArgReader
         this.GetGameWindowPtr();
     }
 
-    public List<string> GetArgs()
+    public LoginData GetLoginData()
     {
-        this.extMemory.Read<ulong>(this.gameWindowPtr,out var count);
-        var args = new List<string>((int)count);
+        var data = new LoginData();
+        ulong count = 0;
+        int try_num = 3;
+        do
+        {
+            this.extMemory.Read<ulong>(this.gameWindowPtr, out count);
+            Thread.Sleep(500);
+        }
+        while (count > 0 || (try_num--) < 0);
+
+        data.Args = new string[count];
         this.extMemory.Read<nuint>(this.gameWindowPtr + 8, out var argListPtr);
         for (int i = 0; i < (int)count; i++)
         {
             this.extMemory.Read<nuint>(argListPtr + (nuint)(8 * i), out var argPtr);
-            var arg = ReadString(argPtr,Encoding.UTF8);
+            var arg = ReadString(argPtr, Encoding.UTF8);
 #if DEBUG
             Console.WriteLine($"{argPtr:X},{arg}");
 #endif
-            args.Add(arg);
+            data.Args[i] = arg;
         }
 
-        return args;
+        if (!data.IsWegame())
+        {
+            return data;
+        }
+
+        this.extMemory.Read<nuint>(this.gameWindowPtr + 0xA0, out var sidPtr);
+        data.SessionId = ReadString(sidPtr, Encoding.UTF8);
+        this.extMemory.Read<nuint>(this.gameWindowPtr + 0xA8, out var sndaIdPtr);
+        data.SndaID = ReadString(sndaIdPtr, Encoding.UTF8);
+        this.extMemory.Read<nuint>(this.gameWindowPtr + 0xB8, out var cmdPtr);
+        data.CommandLine = ReadString(cmdPtr, Encoding.UTF8);
+#if DEBUG
+        Console.WriteLine($"{sidPtr:X},{data.SessionId}");
+        Console.WriteLine($"{sndaIdPtr:X},{data.SndaID}");
+        Console.WriteLine($"{cmdPtr:X},{data.CommandLine}");
+#endif
+        return data;
     }
 
     public void KillProcess()
@@ -92,7 +143,7 @@ public sealed class ArgReader
                 break;
             }
 
-            if (this.gameWindowPtr == 0) 
+            if (this.gameWindowPtr == 0)
             {
                 throw new Exception($"Can not find address for GameWindow");
             }
