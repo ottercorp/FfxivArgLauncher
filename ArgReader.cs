@@ -34,7 +34,7 @@ public sealed class LoginData:IEquatable<LoginData>
     public override int GetHashCode() => (this.SndaID, this.SndaID).GetHashCode();
 
     public bool IsWegame() {
-        if (Args.Contains("rail_zone_stat=1"))
+        if (Args.Contains("rail_zone_state=1"))
             return true;
         return false;
     }
@@ -64,13 +64,13 @@ public sealed class ArgReader
         var data = new LoginData();
         ulong count = 0;
         int try_num = 3;
-        do
-        {
-            this.extMemory.Read<ulong>(this.gameWindowPtr, out count);
-            Thread.Sleep(500);
-        }
-        while (count > 0 || (try_num--) < 0);
-
+        //do
+        //{
+        //    this.extMemory.Read<ulong>(this.gameWindowPtr, out count);
+        //    Thread.Sleep(500);
+        //}
+        //while (count > 0 || (try_num--) < 0);
+        this.extMemory.Read<ulong>(this.gameWindowPtr, out count);
         data.Args = new string[count];
         this.extMemory.Read<nuint>(this.gameWindowPtr + 8, out var argListPtr);
         for (int i = 0; i < (int)count; i++)
@@ -85,6 +85,7 @@ public sealed class ArgReader
 
         if (!data.IsWegame())
         {
+            Console.WriteLine($"{targetProcess.Id} is not WeGame");
             return data;
         }
 
