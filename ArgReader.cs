@@ -109,6 +109,7 @@ public sealed class ArgReader
             Log.Information($"{sidPtr:X},{data.SessionId}");
             Log.Information($"{sndaIdPtr:X},{data.SndaID}");
             Log.Information($"{cmdPtr:X},{data.CommandLine}");
+            break;
         }
 
         return data;
