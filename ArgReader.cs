@@ -81,9 +81,7 @@ public sealed class ArgReader
         {
             this.extMemory.Read<nuint>(argListPtr + (nuint)(8 * i), out var argPtr);
             var arg = ReadString(argPtr, Encoding.UTF8);
-#if DEBUG
             Log.Information($"{argPtr:X},{arg}");
-#endif
             data.Args[i] = arg;
         }
 
@@ -93,17 +91,26 @@ public sealed class ArgReader
             return data;
         }
 
-        this.extMemory.Read<nuint>(this.gameWindowPtr + 0xA0, out var sidPtr);
-        data.SessionId = ReadString(sidPtr, Encoding.UTF8);
-        this.extMemory.Read<nuint>(this.gameWindowPtr + 0xA8, out var sndaIdPtr);
-        data.SndaID = ReadString(sndaIdPtr, Encoding.UTF8);
-        this.extMemory.Read<nuint>(this.gameWindowPtr + 0xB8, out var cmdPtr);
-        data.CommandLine = ReadString(cmdPtr, Encoding.UTF8);
-#if DEBUG
-        Log.Information($"{sidPtr:X},{data.SessionId}");
-        Log.Information($"{sndaIdPtr:X},{data.SndaID}");
-#endif
-        Log.Information($"{cmdPtr:X},{data.CommandLine}");
+        for (int i = 0; i < 20; i++)
+        {
+            this.extMemory.Read<nuint>(this.gameWindowPtr + 0xA0, out var sidPtr, false);
+            this.extMemory.Read<nuint>(this.gameWindowPtr + 0xA8, out var sndaIdPtr);
+            this.extMemory.Read<nuint>(this.gameWindowPtr + 0xB8, out var cmdPtr);
+            if (sidPtr == 0 || sndaIdPtr == 0)
+            {
+                Thread.Sleep(500);
+                Log.Information($"try {i}: sidPtr:{sidPtr:X},sndaIdPtr:{sndaIdPtr:X}");
+                continue;
+            }
+
+            data.SessionId = ReadString(sidPtr, Encoding.UTF8);
+            data.SndaID = ReadString(sndaIdPtr, Encoding.UTF8);
+            data.CommandLine = ReadString(cmdPtr, Encoding.UTF8);
+            Log.Information($"{sidPtr:X},{data.SessionId}");
+            Log.Information($"{sndaIdPtr:X},{data.SndaID}");
+            Log.Information($"{cmdPtr:X},{data.CommandLine}");
+        }
+
         return data;
     }
 
