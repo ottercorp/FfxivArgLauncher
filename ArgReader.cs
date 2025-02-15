@@ -106,9 +106,9 @@ public sealed class ArgReader
             data.SessionId = ReadString(sidPtr, Encoding.UTF8);
             data.SndaID = ReadString(sndaIdPtr, Encoding.UTF8);
             data.CommandLine = ReadString(cmdPtr, Encoding.UTF8);
-            Log.Information($"{sidPtr:X},{data.SessionId}");
-            Log.Information($"{sndaIdPtr:X},{data.SndaID}");
-            Log.Information($"{cmdPtr:X},{data.CommandLine}");
+            Log.Information($"SessionId:{sidPtr:X},{this.MaskString(data.SessionId)}");
+            Log.Information($"SndaID:{sndaIdPtr:X},{this.MaskString(data.SndaID)}");
+            Log.Information($"CommandLine:{cmdPtr:X},{data.CommandLine}");
             break;
         }
 
@@ -118,6 +118,17 @@ public sealed class ArgReader
     public void KillProcess()
     {
         this.targetProcess?.Kill();
+    }
+
+    private string MaskString(string input)
+    {
+        if (string.IsNullOrEmpty(input) || input.Length <= 2)
+        {
+            return input.Length == 1 ? "*" : new string('*', input.Length);
+        }
+
+        int maskLength = input.Length - 2;
+        return $"{input[0]}{new string('*', maskLength)}{input[input.Length - 1]}";
     }
 
     private string ReadString(nuint ptr, Encoding encoding, int maxLength = 256)
