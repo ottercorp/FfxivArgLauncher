@@ -6,6 +6,7 @@ using Reloaded.Memory.Buffers;
 using Reloaded.Memory.Buffers.Internal.Testing;
 using Reloaded.Memory.Sigscan;
 using Reloaded.Memory.Sources;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -81,14 +82,14 @@ public sealed class ArgReader
             this.extMemory.Read<nuint>(argListPtr + (nuint)(8 * i), out var argPtr);
             var arg = ReadString(argPtr, Encoding.UTF8);
 #if DEBUG
-            Console.WriteLine($"{argPtr:X},{arg}");
+            Log.Information($"{argPtr:X},{arg}");
 #endif
             data.Args[i] = arg;
         }
 
         if (!data.IsWegame())
         {
-            Console.WriteLine($"{targetProcess.Id} is not WeGame");
+            Log.Information($"{targetProcess.Id} is not WeGame");
             return data;
         }
 
@@ -99,10 +100,10 @@ public sealed class ArgReader
         this.extMemory.Read<nuint>(this.gameWindowPtr + 0xB8, out var cmdPtr);
         data.CommandLine = ReadString(cmdPtr, Encoding.UTF8);
 #if DEBUG
-        Console.WriteLine($"{sidPtr:X},{data.SessionId}");
-        Console.WriteLine($"{sndaIdPtr:X},{data.SndaID}");
-        Console.WriteLine($"{cmdPtr:X},{data.CommandLine}");
+        Log.Information($"{sidPtr:X},{data.SessionId}");
+        Log.Information($"{sndaIdPtr:X},{data.SndaID}");
 #endif
+        Log.Information($"{cmdPtr:X},{data.CommandLine}");
         return data;
     }
 

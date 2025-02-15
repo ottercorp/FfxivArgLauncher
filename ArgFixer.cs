@@ -1,4 +1,4 @@
-﻿namespace FfxivArgLauncher;
+namespace FfxivArgLauncher;
 
 using Iced.Intel;
 using Reloaded.Memory.Buffers;
@@ -30,7 +30,7 @@ public unsafe sealed class ArgFixer
         this.targetProcess = targetProcess;
         this.disposeTargetProcess = disposeTargetProcess;
 #if DEBUG
-        Console.WriteLine(targetProcess.Id);
+        Log.Information($"TargetProcess: {targetProcess.Id}");
 #endif
         
         this.extMemory = new ExternalMemory(targetProcess);
@@ -231,9 +231,9 @@ public unsafe sealed class ArgFixer
         }
 
         bytes = this.Assemble(asm);
-        //Console.WriteLine(bytes.Length);
+        //Log.Information(bytes.Length);
         this.extMemory.WriteRaw(sdoLoginAddr, bytes);
-        //Console.WriteLine($"hookAddress: 0x{hookAddress:X}");
+        //Log.Information($"hookAddress: 0x{hookAddress:X}");
         //asm.
     }
 
