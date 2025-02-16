@@ -1,18 +1,15 @@
 namespace FfxivArgLauncher;
 
 using Iced.Intel;
-using PeNet.Header.Resource;
-using Reloaded.Memory.Buffers;
-using Reloaded.Memory.Buffers.Internal.Testing;
+
 using Reloaded.Memory.Sigscan;
 using Reloaded.Memory.Sources;
 using Serilog;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+
 using Decoder = Iced.Intel.Decoder;
 
 public sealed class LoginData : IEquatable<LoginData>

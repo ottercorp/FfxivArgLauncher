@@ -1,9 +1,3 @@
-using System;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-using Dalamud.Injector;
-using Reloaded.Memory.Buffers;
-using Serilog;
 namespace FfxivArgLauncher;
 
 internal class Program

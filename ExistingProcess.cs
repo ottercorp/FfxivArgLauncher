@@ -1,10 +1,9 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Reflection;
 
 using Microsoft.Win32.SafeHandles;
 
-namespace Dalamud.Injector;
+namespace FfxivArgLauncher;
 
 /// <summary>
 /// Class representing an already held process handle.

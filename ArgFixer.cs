@@ -4,7 +4,7 @@ using Iced.Intel;
 using Reloaded.Memory.Buffers;
 using Reloaded.Memory.Sigscan;
 using Reloaded.Memory.Sources;
-using Reloaded.Memory.Utilities;
+
 using Serilog;
 using System;
 using System.Diagnostics;
@@ -32,7 +32,7 @@ public unsafe sealed class ArgFixer
 #if DEBUG
         Log.Information($"TargetProcess: {targetProcess.Id}");
 #endif
-        
+
         this.extMemory = new ExternalMemory(targetProcess);
         this.memoryBuffer = new MemoryBufferHelper(targetProcess).CreatePrivateMemoryBuffer(4096);
         this.GetMainModuleAddress();

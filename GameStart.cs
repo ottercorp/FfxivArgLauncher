@@ -1,16 +1,14 @@
-﻿using System;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices;
-using System.Threading;
+﻿// ReSharper disable InconsistentNaming
 
-using Serilog;
-
-// ReSharper disable InconsistentNaming
-
-namespace Dalamud.Injector
+namespace FfxivArgLauncher
 {
+    using System.ComponentModel;
+    using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Runtime.InteropServices;
+
+    using Serilog;
+
     /// <summary>
     /// Class responsible for starting the game and stripping ACL protections from processes.
     /// </summary>
