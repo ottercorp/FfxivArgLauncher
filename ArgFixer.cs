@@ -20,9 +20,10 @@ public unsafe sealed class ArgFixer
     private readonly ExternalMemory extMemory;
     private readonly PrivateMemoryBuffer memoryBuffer;
     private readonly Scanner scanner;
+    private nint mainModuleRegionSize;
 
     private nuint mainModuleBaseAddress;
-    private nint mainModuleRegionSize;
+
     private nuint argFixFunctionAddr;
 
     public ArgFixer(Process targetProcess, bool disposeTargetProcess = true)
@@ -34,10 +35,12 @@ public unsafe sealed class ArgFixer
 #endif
 
         this.extMemory = new ExternalMemory(targetProcess);
-        this.memoryBuffer = new MemoryBufferHelper(targetProcess).CreatePrivateMemoryBuffer(4096);
+        this.memoryBuffer = new MemoryBufferHelper(targetProcess).CreatePrivateMemoryBuffer(0x4000);
         this.GetMainModuleAddress();
         this.extMemory.ReadRaw(this.mainModuleBaseAddress, out var exeData, (int)this.mainModuleRegionSize);
         this.scanner = new Scanner(exeData);
+        //this.SetupArgFixFunction();
+        //this.Fix();
     }
 
     public void Fix()
@@ -93,16 +96,23 @@ public unsafe sealed class ArgFixer
 
         var strncmp = asm.CreateLabel();
 
-        asm.mov(__[rsp + 0x8], rbx);
-        asm.mov(__[rsp + 0x10], rbx);
-        asm.push(rdi);
+
+        asm.mov(__[rsp + 0x08], rbx);
+        asm.mov(__[rsp + 0x10], rbp);
+        asm.mov(__[rsp + 0x18], rsi);
+        asm.mov(__[rsp + 0x20], rdi);
+        asm.push(r14);
         asm.sub(rsp, 0x20);
-        asm.xor(esi, esi);
+
+        asm.xor(r14, r14);
         asm.mov(__qword_ptr[rcx + 0x61], 1);
-        asm.mov(__[rcx + 0x88], rsi);
+        //asm.mov(__[rcx + 0x88], rsi);
+
         asm.mov(rdi, rcx);
         asm.mov(rbx, __[rcx + 8]);
-        asm.cmp(__[rcx], esi);
+        asm.mov(ebp, r14d);
+        asm.mov(esi, r14d);
+        asm.cmp(__[rcx], r14d);
         asm.jle(exit);
 
         asm.Label(ref testId);
@@ -113,6 +123,7 @@ public unsafe sealed class ArgFixer
         asm.test(eax, eax);
         asm.jnz(sndaId);
         asm.mov(rax, __[rbx]);
+        asm.mov(r14d, 1);
         asm.add(rax, strTestId.Length);
         asm.mov(__[rdi + 0xA0], rax);
         asm.jmp(loop);
@@ -125,6 +136,7 @@ public unsafe sealed class ArgFixer
         asm.test(eax, eax);
         asm.jnz(loop);
         asm.mov(rax, __[rbx]);
+        asm.mov(ebp, 1);
         asm.add(rax, strSndaId.Length);
         asm.mov(__[rdi + 0xA8], rax);
 
@@ -135,12 +147,67 @@ public unsafe sealed class ArgFixer
         asm.jl(testId);
 
         asm.Label(ref exit);
-        asm.mov(rbx, __[rsp + 0x28 + 8]);
-        asm.xor(eax, eax);
-        asm.mov(rsi, __[rsp + 0x28 + 0x10]);
+        asm.mov(rbx, __[rsp + 0x28 + 0x08]);
+        asm.xor(eax, 218105633);
+        asm.mov(rsi, __[rsp + 0x28 + 0x18]);
+        asm.cdq();
+        asm.mov(rdi, __[rsp + 0x28 + 0x20]);
+        asm.imul(ebp, r14d);
+        asm.idiv(ebp);
+        asm.mov(rbp, __[rsp + 0x28 + 0x10]);
         asm.add(rsp, 0x20);
-        asm.pop(rdi);
+        asm.pop(r14);
         asm.ret();
+
+        //asm.mov(__[rsp + 0x08], rbx);
+        //asm.mov(__[rsp + 0x10], rbx);
+        //asm.push(rdi);
+        //asm.sub(rsp, 0x20);
+        //asm.xor(esi, esi);
+        //asm.mov(__qword_ptr[rcx + 0x61], 1);
+        //asm.mov(__[rcx + 0x88], rsi);
+        //asm.xor(esi, esi);
+        //asm.mov(rdi, rcx);
+        //asm.mov(rbx, __[rcx + 8]);
+        //asm.cmp(__[rcx], esi);
+        //asm.jle(exit);
+
+        //asm.Label(ref testId);
+        //asm.mov(rcx, __[rbx]);
+        //asm.lea(rdx, __[strTestIdAddress]);
+        //asm.mov(r8d, strTestId.Length);
+        //asm.call(strncmp);
+        //asm.test(eax, eax);
+        //asm.jnz(sndaId);
+        //asm.mov(rax, __[rbx]);
+        //asm.add(rax, strTestId.Length);
+        //asm.mov(__[rdi + 0xA0], rax);
+        //asm.jmp(loop);
+
+        //asm.Label(ref sndaId);
+        //asm.mov(rcx, __[rbx]);
+        //asm.lea(rdx, __qword_ptr[strSndaIdAddress]);
+        //asm.mov(r8d, strSndaId.Length);
+        //asm.call(strncmp);
+        //asm.test(eax, eax);
+        //asm.jnz(loop);
+        //asm.mov(rax, __[rbx]);
+        //asm.add(rax, strSndaId.Length);
+        //asm.mov(__[rdi + 0xA8], rax);
+
+        //asm.Label(ref loop);
+        //asm.inc(esi);
+        //asm.add(rbx, 8);
+        //asm.cmp(esi, __[rdi]);
+        //asm.jl(testId);
+
+        //asm.Label(ref exit);
+        //asm.mov(rbx, __[rsp + 0x28 + 8]);
+        //asm.xor(eax, eax);
+        //asm.mov(rsi, __[rsp + 0x28 + 0x10]);
+        //asm.add(rsp, 0x20);
+        //asm.pop(rdi);
+        //asm.ret();
 
         var return_0 = asm.CreateLabel();
         var return_value = asm.CreateLabel();
@@ -172,7 +239,6 @@ public unsafe sealed class ArgFixer
         asm.sub(eax, r9d);
         asm.ret();
 
-
         var bytes = this.Assemble(asm);
         this.argFixFunctionAddr = this.memoryBuffer.Add(bytes);
         Log.Information($"ArgFixFunctionAddress: 0x{this.argFixFunctionAddr:X}");
@@ -188,7 +254,15 @@ public unsafe sealed class ArgFixer
 
     public void SetupHook(nuint sdoLoginAddr)
     {
-        this.extMemory.ReadRaw(sdoLoginAddr, out var orginBytes, 40);
+
+        var asm = new Assembler(64);
+
+        asm.mov(rax, this.argFixFunctionAddr);
+        asm.jmp(rax);
+
+        var bytes = this.Assemble(asm);
+
+        this.extMemory.ReadRaw(sdoLoginAddr, out var orginBytes, bytes.Length + 0x20);
         var codeReader = new ByteArrayCodeReader(orginBytes);
         var decoder = Decoder.Create(64, codeReader);
         decoder.IP = sdoLoginAddr;
@@ -202,34 +276,16 @@ public unsafe sealed class ArgFixer
                 break;
             }
 
-            if ((instr.IP - sdoLoginAddr) >= 12)
+            if ((instr.IP - sdoLoginAddr) >= (ulong)bytes.Length)
             {
                 bytesNum = (int)(instr.IP - sdoLoginAddr);
                 break;
             }
         }
 
-        var asm = new Assembler(64);
-        asm.push(rbx);
-        asm.push(rdi);
-        asm.mov(rax, this.argFixFunctionAddr);
-        asm.call(rax);
-        asm.pop(rdi);
-        asm.pop(rbx);
-        asm.ret();
-
-        var bytes = this.Assemble(asm);
+        Log.Information($"Nops Num:{bytesNum - bytes.Length - 1}");
+        asm.nop(bytesNum - bytes.Length - 1);
         //bytes.Append(bytes);
-        var detourBodyAddress = this.memoryBuffer.Add(bytes);
-        Log.Information($"DetourBodyAddress: 0x{detourBodyAddress:X}");
-        asm = new Assembler(64);
-        asm.mov(rax, detourBodyAddress);
-        asm.jmp(rax);
-        for (int i = 0; i < bytesNum - 12; i++)
-        {
-            asm.nop();
-        }
-
         bytes = this.Assemble(asm);
         //Log.Information(bytes.Length);
         this.extMemory.WriteRaw(sdoLoginAddr, bytes);
